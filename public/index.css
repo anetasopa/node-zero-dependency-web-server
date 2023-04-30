@@ -1,3 +1,11 @@
-.test {
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0 auto;
+}
+
+h1 {
   color: red;
 }
