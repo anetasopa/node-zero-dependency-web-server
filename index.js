@@ -1,59 +1,63 @@
 import fs from 'node:fs';
 import http from 'node:http';
 
-const folder = './public';
 const port = 3000;
+const host = 'localhost';
 
-// import { html } from './public/memes/index.html';
+const readAndSendFile = (contentType, path, res) => {
+  res.writeHead(200, { 'Content-Type': contentType });
 
-// createServer(function (req, res) {
-//   console.log(req.url);
-//   res.write('Hello World!');
-//   res.end();
-// }).listen(3000, function () {
-//   console.log('server start at port 3000');
-// });
-
-// http
-//   .createServer(function (req, res) {
-//     console.log(req.url);
-//     res.writeHead(200, { 'Content-Type': 'text/html' });
-//     res.write('<h1>Hello World!<h1>');
-//     res.end();
-//   })
-//   .listen(3000, function () {
-//     console.log('server start at port 3000');
-//   });
-
-// http
-//   .createServer(function (req, res) {
-//     fs.readFile(folder, function (err, data) {
-//       res.writeHead(200, { 'Content-Type': 'text/html' });
-//       const url = req.url;
-//       if (url === '/index.html') {
-//         res.write('<h1>hello</h1>');
-//         res.end();
-//       } else {
-//         console.log(err);
-//       }
-//     });
-//   })
-//   .listen(port, function () {
-//     console.log('server start at port 3000');
-//   });
+  fs.readFile(path, (err, fileContent) => {
+    res.end(fileContent);
+  });
+};
 
 http
   .createServer(function (req, res) {
-    res.writeHead(200, { 'Content-Type': 'text/html' });
-    const url = req.url;
-    if (url === '/index.html') {
-      res.write('<h1>index.html<h1>');
-      res.end();
-    } else {
-      res.write('<h1>Hello World!<h1>');
-      res.end();
+    const { url } = req;
+
+    // http://localhost:3000 and http://localhost:3000/index.html should return the webpage in the index.html file
+    if (url === '/' || url === '/index.html') {
+      return readAndSendFile('text/html', './public/index.html', res);
     }
+
+    // http://localhost:3000/index.css should return the text content of the file
+    if (url === '/index.css') {
+      res.writeHead(200, { 'Content-Type': 'text/plain' });
+
+      fs.readFile('./public/index.css', (err, fileContent) => {
+        res.end(fileContent);
+      });
+
+      return;
+    }
+
+    // http://localhost:3000/memes and http://localhost:3000/memes/index.htm should return the webpage in the index.htm file
+    if (url === '/memes' || url === '/memes/index.htm') {
+      res.writeHead(200, { 'Content-Type': 'text/html' });
+
+      fs.readFile('./public/memes/index.htm', (err, fileContent) => {
+        res.end(fileContent);
+      });
+
+      return;
+    }
+
+    // http://localhost:3000/1.jpg should display the 1.jpg image
+    if (url === '/1.jpg') {
+      res.writeHead(200, { 'Content-Type': 'image/jpeg' });
+
+      fs.readFile('./public/memes/1.jpg', (err, fileContent) => {
+        res.end(fileContent);
+      });
+
+      return;
+    }
+
+    // http://localhost:3000/non-existent-file.txt should return a 404 status code and a message about the file not being found
+    res.writeHead(404, { 'Content-Type': 'text/html' });
+    res.end('');
   })
-  .listen(3000, function () {
-    console.log('server start at port 3000');
+  .listen(port, function () {
+    console.log(`Server start at ${host}:${port}`);
   });
